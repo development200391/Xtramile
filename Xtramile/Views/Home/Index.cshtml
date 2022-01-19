@@ -1,0 +1,238 @@
+﻿@model EntryData
+
+@{
+    ViewData["Title"] = "Enter Data";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Enter Data</h1>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            @*<form asp-action="Edit">*@
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Country" class="control-label"></label>
+                @Html.TextBoxFor(m => m.Country, new { @class = "form-control", @onkeypress="return get_list(event)"})
+                <span asp-validation-for="Country" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="City" class="control-label"></label>
+                @Html.DropDownListFor(model => model.City, new SelectList(" "), "--Select City--", new { @class = "form-control", @onChange="getSelectedOptions(this)"})
+                <span asp-validation-for="City" class="text-danger"></span>
+            </div>
+            @*</form>*@
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Location</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="location"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Time</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="time"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Wind</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="wind"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Visibility</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="visibility"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Sky conditions</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="sky"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Temperature (in Celsius)</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="tempcel"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Temperature (in Fahrenheit)</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="tempfah"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Dew Point</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="dew_point"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Relative Humidity</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="humidity"></label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>Pressure</label>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label id="pressure"></label>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+        function get_list(e) {
+            if (e.key === 'Enter') {
+                var selected_val = document.getElementById("Country").value;
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/selectCountry",
+                    data: "country=" + selected_val,
+                    success: function (data) {
+                        //drop all option
+                        removeOptions(document.getElementById('City'));
+
+
+                        var select = document.getElementById('City');
+                        var options = "";
+                        //Set option empty
+                        options += `<option value=${0}>${'--Select City--'}</option>`;
+                        for (var i = 0; i < data.length; i++) {
+                          options += `<option value=${data[i].value}>${data[i].text}</option>`;
+                        }
+                        $(select).append(options);
+                    }
+                });
+            }
+        }
+
+        function getSelectedOptions(sel) {
+            var opts = [],
+                opt;
+            var text = ''
+            var val = ''
+            var len = sel.options.length;
+            for (var i = 0; i < len; i++) {
+                opt = sel.options[i];
+
+                if (opt.selected) {
+                    opts.push(opt);
+                    text = opt.text;
+                    val = opt.value;
+                }
+            }
+
+            if (text != "--Select City--" && text != "")
+            {
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/selectCity",
+                    data: "city=" + val,
+                    success: function(data) {
+                        document.getElementById('location').innerHTML = data.name;
+                        document.getElementById('time').innerHTML = data.dt;
+                        document.getElementById('wind').innerHTML = data.wind.speed;
+                        document.getElementById('visibility').innerHTML = data.visibility;
+                        document.getElementById('sky').innerHTML = data.weather.description;
+                        document.getElementById('tempcel').innerHTML = data.main.temp;
+                        document.getElementById('tempfah').innerHTML = data.main.temp;
+                        //document.getElementById('dew_point').innerHTML = data.visibility;
+                        document.getElementById('humidity').innerHTML = data.main.humidity;
+                        document.getElementById('pressure').innerHTML = data.main.pressure;
+
+                    }
+                });
+            }
+            else
+            {
+                document.getElementById('location').innerHTML = "";
+                document.getElementById('location').innerHTML = data.name;
+                document.getElementById('time').innerHTML = data.dt;
+                document.getElementById('wind').innerHTML = data.wind.speed;
+                document.getElementById('visibility').innerHTML = data.visibility;
+                document.getElementById('sky').innerHTML = data.weather.description;
+                document.getElementById('tempcel').innerHTML = data.main.temp;
+                document.getElementById('tempfah').innerHTML = data.main.temp;
+                //document.getElementById('dew_point').innerHTML = data.visibility;
+                document.getElementById('humidity').innerHTML = data.main.humidity;
+                document.getElementById('pressure').innerHTML = data.main.pressure;
+
+            }
+
+            return opts;
+        }
+
+       function removeOptions(selectElement) {
+       var i, L = selectElement.options.length - 1;
+       for(i = L; i >= 0; i--) {
+          selectElement.remove(i);
+       }
+    }
+</script>
